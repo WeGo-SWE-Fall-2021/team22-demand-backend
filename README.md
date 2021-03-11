@@ -1,5 +1,6 @@
 # Team 22 Backend Python Webserver
-This repository handles python backend. It is proxied from NGINX to the Python script so that we can handle requests via python.
+This repository handles python backend. It is proxied from NGINX to the Python script so that we can handle requests via python. This python request handler handles any request sent from `https://demand.team22.sweispring21.tk/api/v1/[reuqest-name-here]`.
+
 
 # Installation
 *Before you install, make sure you have Python 3.8.5 on your system.*
