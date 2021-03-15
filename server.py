@@ -31,12 +31,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         elif '/login' in path:
             client = MongoClient('localhost:27017', username="developer", password="team22_developer", authSource="team22_demand")
             db = client['team22_demand']
-            loginAttempt = db.user.find({"username": postData["username"],
+            validCredentials = db.user.count_documents({"username": postData["username"],
                           "password": postData["password"]})
-            if loginAttempt.count() > 0:
-                status = 200
+            if validCredentials > 0:
+                status = 201
             else:
-                status = 300
+                status = 301
             self.send_response(status)
             self.send_header("Content-type", "text/html")
             self.end_headers()
