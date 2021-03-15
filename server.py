@@ -24,8 +24,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         # receiving registration requests and writing their data to the demand database
         if '/register' in path:
-            client = MongoClient('localhost:27017', username="developer", password="team22_developer")
-            db = client.team22_demand
+            client = MongoClient('localhost:27017', username="developer", password="team22_developer", authSource="team22_demand")
+            db = client['team22_demand']
             db.user.insert_one({"username": postData["username"],
                                 "fname": postData["fname"],
                                 "lname": postData["lname"],
