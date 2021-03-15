@@ -27,6 +27,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                 "lname": postData["lname"],
                                 "address": postData["address"],
                                 "password": postData["password"]})
+            self.send_response(201)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
             client.close()
         elif '/login' in path:
             client = MongoClient('localhost:27017', username="developer", password="team22_developer", authSource="team22_demand")
@@ -40,6 +43,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.send_response(status)
             self.send_header("Content-type", "text/html")
             self.end_headers()
+            client.close()
 
 
 
