@@ -1,4 +1,4 @@
-# Team 22 Backend Python Webserver
+# Team 22 Demand Backend Python V1
 This repository handles python backend. It is proxied from NGINX to the Python script so that we can handle requests via python. This python request handler handles any request sent from `https://demand.team22.sweispring21.tk/api/v1/[reuqest-name-here]`.
 
 
@@ -6,14 +6,14 @@ This repository handles python backend. It is proxied from NGINX to the Python s
 *Before you install, make sure you have Python 3.8.5 on your system.*
 
 First off, clone the repository using:
-```git clone https://bitbucket.org/swe-spring-2021-team-22/team22-backend.git"```
+```git clone https://bitbucket.org/swe-spring-2021-team-22/team22-demand-backend.git"```
 
-After that, `cd` in`team22-backend` and run ```python3 -m venv backend``` and you should have an environment created.
+After that, `cd` in`team22-demand-backend` and run ```python3 -m venv backend``` and you should have an environment created.
 
 
 # Usage
 In our system, all you have to do is go to your directory, else go to your cloned repository:
-```cd /home/team22/team22-backend/```
+```cd /home/team22/team22-demand-backend/```
 
 Once you're in the directory, all you have to do is type:
 ```source backend/bin/activate```
