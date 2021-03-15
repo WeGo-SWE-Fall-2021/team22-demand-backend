@@ -13,10 +13,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     # handle post requests
     def do_POST(self):
-        # status = 200
-        # self.send_response(status)
-        # self.send_header("Content-type", "text/html")
-        # self.end_headers()
 
         # store POST data into a dictionary
         postData = self.extract_POST_Body()
@@ -32,6 +28,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                 "address": postData["address"],
                                 "password": postData["password"]})
             client.close()
+        elif '/login' in path:
+            client = MongoClient('localhost:27017', username="developer", password="team22_developer", authSource="team22_demand")
+            db = client['team22_demand']
+            loginAttempt = db.user.find({"username": postData["username"],
+                          "password": postData["password"]})
+            if loginAttempt.count() > 0:
+                status = 200
+            else:
+                status = 300
+            self.send_response(status)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
 
 
 
