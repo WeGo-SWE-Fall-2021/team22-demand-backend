@@ -19,7 +19,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         postData = self.extract_POST_Body()
         path = self.path
 
-        # Handle request here usinf if and elif
+        # Handle request here using if and elif
         if 'request' in path:
             pass
 
