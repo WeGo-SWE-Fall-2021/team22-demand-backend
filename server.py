@@ -46,12 +46,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 'message': str(temporaryResponse)
             }
 
-            self.send_response(status)
-            self.send_header("Content-Type", "text/html")
-            self.end_headers()
-            responseString = json.dumps(responseBody).encode('utf-8')
-            self.wfile.write(responseString)
-            client.close()
+        self.send_response(status)
+        self.send_header("Content-Type", "text/html")
+        self.end_headers()
+        responseString = json.dumps(responseBody).encode('utf-8')
+        self.wfile.write(responseString)
+        client.close()
 
     def do_GET(self):
         return
