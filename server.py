@@ -48,7 +48,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 }
             else:
                 status = 500
-                print(temporaryResponse)
+                console.log(temporaryResponse)
 
         self.send_response(status)
         self.send_header("Content-Type", "text/html")
