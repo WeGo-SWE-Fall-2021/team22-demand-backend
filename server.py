@@ -46,7 +46,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     'status': 'success',
                     'message': str(temporaryResponse)
                 }
-            elif:
+            else:
                 status = 500
                 print(temporaryResponse)
 
