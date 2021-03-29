@@ -1,3 +1,4 @@
 #Ignore venv, user creates on their end
 env/
 .idea/
+.env
