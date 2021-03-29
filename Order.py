@@ -44,5 +44,5 @@ class Order:
         url = url + '?orderNum=' + str(self.orderID)
         response = urllib.request.urlopen(url).read().decode('utf-8')
         responseBody = json.loads(response)
-        vehicleID = responseBody["orderNum"]
+        vehicleID = int(responseBody["orderNum"])
         return vehicleID
