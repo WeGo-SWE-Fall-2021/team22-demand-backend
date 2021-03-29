@@ -34,18 +34,19 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             ##### TEMPORARY just sending the order number back from the supply side as a response
             temporaryResponse = order.requestVehicle()
-            status = 200
-            responseBody = {
-                'status': 'success',
-                'message': str(temporaryResponse)
-            }
+            if (temporaryResponse == 0000):
+                status = 200
+                responseBody = {
+                    'status': 'success',
+                    'message': str(temporaryResponse)
+                }
 
-            self.send_response(status)
-            self.send_header("Content-Type", "text/html")
-            self.end_headers()
-            responseString = json.dumps(responseBody).encode('utf-8')
-            self.wfile.write(responseString)
-            client.close()
+        self.send_response(status)
+        self.send_header("Content-Type", "text/html")
+        self.end_headers()
+        responseString = json.dumps(responseBody).encode('utf-8')
+        self.wfile.write(responseString)
+        client.close()
 
     def do_GET(self):
         return
