@@ -40,11 +40,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             ##### TEMPORARY just sending the order number back from the supply side as a response
             temporaryResponse = order.requestVehicle()
-            if (temporaryResponse == 0000):
+            if temporaryResponse.status == 200:
                 status = 200
                 responseBody = {
                     'status': 'success',
-                    'message': str(temporaryResponse)
+                    'message': json.loads(temporaryResponse.read().decode('utf-8'))
                 }
 
         self.send_response(status)
