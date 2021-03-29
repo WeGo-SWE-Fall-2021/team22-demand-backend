@@ -39,7 +39,7 @@ class Order:
     # sends a get request to the supply backend to get a vehicle assigned to this order
     ###### Currently this just sends the orderID as a paramater and gets back the same ID to show connection between supply and demand #####
     def requestVehicle(self):
-        url = "https://supply.team22.sweispring21.tk/api/v1/supply/requestVehicle"
+        url = "https://supply.team22.sweispring21.tk/api/v1/supply/order"
         url = url + '?orderNum=' + str(self.orderID)
         vehicleID = urllib.request.urlopen(url)
         return vehicleID
