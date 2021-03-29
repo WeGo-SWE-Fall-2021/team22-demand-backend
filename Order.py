@@ -1,4 +1,5 @@
 import urllib.request
+import json
 
 class Order:
 
@@ -41,5 +42,7 @@ class Order:
     def requestVehicle(self):
         url = "https://supply.team22.sweispring21.tk/api/v1/supply/order"
         url = url + '?orderNum=' + str(self.orderID)
-        vehicleID = urllib.request.urlopen(url)
+        response = urllib.request.urlopen(url).read().decode('utf-8')
+        responseBody = json.loads(response)
+        vehicleID = responseBody["orderNum"]
         return vehicleID
