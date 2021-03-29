@@ -46,6 +46,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     'status': 'success',
                     'message': json.loads(temporaryResponse.read().decode('utf-8'))
                 }
+            else:
+                status = 500
+                print(temporaryResponse)
 
         self.send_response(status)
         self.send_header("Content-Type", "text/html")
