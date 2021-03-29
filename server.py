@@ -1,7 +1,13 @@
+import sys
+# Allow importing files from other directories
+sys.path.insert(1, '../team22-common-services-backend')
+sys.path.insert(1, '../common-services-backend')
 import json
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
 from Order import Order
+from MongoUtils import initMongoFromCloud
+
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
