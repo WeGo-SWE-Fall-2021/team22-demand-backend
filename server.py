@@ -1,6 +1,7 @@
 import json
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
+from Order import Order
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -15,13 +16,36 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     # handle post requests
     def do_POST(self):
-        # store POST data into a dictionary
-        postData = self.extract_POST_Body()
+        status = 404  # HTTP Request: Not found
+        postData = self.extract_POST_Body()  # store POST data into a dictionary
         path = self.path
+        cloud = postData['cloud']
+        client = initMongoFromCloud(cloud)
+        db = client['team22_' + cloud]
+        responseBody = {
+            'status': 'failed',
+            'message': 'Request not found'
+        }
 
-        # Handle request here using if and elif
-        if 'request' in path:
-            pass
+        if '/order' in path:
+            order = Order(postData)
+            # TODO in the future will call user.requestVehicle, get a vehicleID back, then add it to the database
+            db.order.insert_one(order.__dict__)
+
+            ##### TEMPORARY just sending the order number back from the supply side as a response
+            temporaryResponse = order.requestVehicle()
+            status = 200
+            responseBody = {
+                'status': 'success',
+                'message': str(temporaryResponse)
+            }
+
+            self.send_response(status)
+            self.send_header("Content-Type", "text/html")
+            self.end_headers()
+            responseString = json.dumps(responseBody).encode('utf-8')
+            self.wfile.write(responseString)
+            client.close()
 
     def do_GET(self):
         return
