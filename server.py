@@ -5,8 +5,9 @@ sys.path.insert(1, '../common-services-backend')
 import json
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
-from Order import Order
-from MongoUtils import initMongoFromCloud
+from order import Order
+from customer import Customer
+from mongoutils import initMongoFromCloud
 
 
 
@@ -36,7 +37,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         if '/order' in path:
             order = Order(postData)
             # TODO in the future will call user.requestVehicle, get a vehicleID back, then add it to the database
-            db.order.insert_one(order.__dict__)
+            data = {
+                "_id": order.id,
+                "customerId": order.customerId,
+                "pluginName": order.pluginName,
+                "timeStamp": order.timeStamp,
+                "paymentType": order.paymentType,
+                "orderDestination": order.orderDestination
+            }
+            db.Order.insert_one(data)
 
             ##### TEMPORARY just sending the order number back from the supply side as a response
             temporaryResponse = order.requestVehicle()

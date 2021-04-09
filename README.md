@@ -1,6 +1,27 @@
 # Team 22 Demand Python Backend
 This is the Team 22 backend for demand. This repository deals with `demand` back end.
 
+## REST API
+You can view working REST API for supply using [Postman]()
+
+## Structure
+```
+team22-supply-backend
+├── docs                            # Documentation Directory
+├── unittest                        # Unit Test Directory to test Object classes                     
+│   └── customer_test_case.py       # Test cases for `customer.py` class
+│   └── order_test_case.py          # Test cases for `order.py` class
+├── customer.py                     # Customer class object
+├── order.py                        # Order class object
+├── server.py                       # The main Python endpoints server for supply cloud
+├── requirements.txt                # Python Dependencies to run `server.py`
+├── bitbucket-pipelines.yml         # This is our bitbucket pipeline which does continous integrations test
+└── README.md                       # Documentation about this repo
+```
+
+> Use short lowercase names for files and folders except for
+> `README.md`
+
 # Modifying This Repo
 ### Cloning repository
 ***Before you star you must have Python 3.8 installed in your system***  
