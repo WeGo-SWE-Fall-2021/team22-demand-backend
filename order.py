@@ -1,4 +1,4 @@
-import urllib.request
+import requests
 import json
 
 from uuid import uuid4
@@ -59,11 +59,20 @@ class Order:
     ###### Currently this just sends the orderID as a paramater and gets back the same ID to show connection between supply and demand #####
     def requestVehicle(self):
         url = "https://supply.team22.sweispring21.tk/api/v1/supply/dispatch"
-        url = url + '?orderNum=' + str(self.orderID)
-        response = urllib.request.urlopen(url).read().decode('utf-8')
-        responseBody = json.loads(response)
-        vehicleID = int(responseBody["orderNum"])
-        return vehicleID
+        data = {
+            "orderId": self.id,
+            "orderDestination": self.orderDestination,
+            "pluginType": "1"
+        }
+        response = requests.post(url, json=data, timeout=10)
+        responseBody = json.loads(response.text)
+        vehicleID = responseBody["orderNum"]
+        status = response.status_code
+        return_data = {
+            "status": response.status_code,
+            "tracking": vehicleID
+        }
+        return return_data
 
     def __str__(self):
         return f"Order ( \nid: {self.id} \ncustomerId: {self.customerId} \npluginName: {self.pluginName} \ntimeStamp: {self.timeStamp} \npaymentType: {self.paymentType} \norderDestination: {self.orderDestination} \n)"

@@ -23,7 +23,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     # handle post requests
     def do_POST(self):
-        status = 404  # HTTP Request: Not found
+        status = 401  # HTTP Request: Not found
         postData = self.extract_POST_Body()  # store POST data into a dictionary
         path = self.path
         cloud = postData['cloud']
@@ -46,27 +46,24 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 "orderDestination": order.orderDestination
             }
             db.Order.insert_one(data)
-
-            ##### TEMPORARY just sending the order number back from the supply side as a response
-            temporaryResponse = order.requestVehicle()
-            if temporaryResponse == 0000:
-                status = 200
+            response = order.requestVehicle()
+            if response["status"] == 201:
+                status = 201
                 responseBody = {
                     'status': 'success',
-                    'message': temporaryResponse
+                    'message': 'successfully created order',
+                    'tracking': response["tracking"] 
                 }
-            else:
-                status = 500
 
         self.send_response(status)
-        self.send_header("Content-Type", "text/html")
+        self.send_header("Content-Type", "application/json")
         self.end_headers()
         responseString = json.dumps(responseBody).encode('utf-8')
         self.wfile.write(responseString)
         client.close()
 
     def do_GET(self):
-        return
+        pass
 
 
 def main():

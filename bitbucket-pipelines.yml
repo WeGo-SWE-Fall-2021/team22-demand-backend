@@ -3,10 +3,19 @@
 image: python:3.8
 
 definitions:
+  caches:
+    mongo: /usr/bin/mongo
+  services:
+    mongo:
+      image: mongo
   steps:
     - step: &build-and-unittest
         name: Build and Run Test
         script:
+          - echo "Setting up MongoDB"
+          - if ! which mongo > /dev/null; then  wget https://repo.mongodb.org/apt/debian/dists/buster/mongodb-org/4.4/main/binary-amd64/mongodb-org-shell_4.4.5_amd64.deb && apt install ./mongodb-org-shell_4.4.5_amd64.deb; fi;
+          - mongo --port 27017 --eval 'db.getSiblingDB("admin").createUser({ user:"admin", pwd:"'"$MONGO_ADMIN_PW"'", roles:[{role:"root", db:"admin"}]})'
+          - mongo --port 27017 -u 'admin' -p $MONGO_ADMIN_PW --authenticationDatabase 'admin' --eval 'db.getSiblingDB("team22_demand").createUser({ user:"developer", pwd:"'"$MONGO_TEAM_PW"'", roles:["readWrite"]})'
           - cd ../
           - git clone git@bitbucket.org:swe-spring-2021-team-22/team22-common-services-backend.git
           - cd team22-common-services-backend/
@@ -21,7 +30,11 @@ definitions:
           - cd unittest
           - python3 -m unittest discover -p "*test*.py" -v
           - deactivate
+        services: 
+          - mongo
 
+
+        
 pipelines:
   default:
     - step: *build-and-unittest
