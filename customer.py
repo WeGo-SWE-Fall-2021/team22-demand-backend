@@ -1,14 +1,14 @@
 import sys
 
-if '../' in sys.path:
+if any('unittest/../' in string for string in sys.path):
     # Current working directory is unittest so go back from cwd twice
-    sys.path.insert(2, '../../team22-common-services-backend')
-    sys.path.insert(2, '../../common-services-backend')
+    sys.path.insert(2, sys.path[0] + '/../../team22-common-services-backend')
+    sys.path.insert(2, sys.path[0] + '/../../common-services-backend')
 
 else:
     # Current working directory is demand-backend so go back from cwd once
-    sys.path.insert(1, '../team22-common-services-backend')
-    sys.path.insert(1, '../common-services-backend')
+    sys.path.insert(2, sys.path[0] + '/../team22-common-services-backend')
+    sys.path.insert(2, sys.path[0] + '/../common-services-backend')
 
 from user import User
 

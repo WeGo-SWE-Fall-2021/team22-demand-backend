@@ -1,11 +1,10 @@
 import unittest
 import sys
-import xmlrunner
 
-sys.path.insert(1, "../")
+sys.path.insert(1, sys.path[0] + "/../")
 
 from order import Order
-
+from plugintype import PluginType
 
 class OrderTestCase(unittest.TestCase):
 
@@ -14,7 +13,7 @@ class OrderTestCase(unittest.TestCase):
             "_id": "1234",
             "customerId": "9876",
             "orderDestination": "austin",
-            "pluginName": "food",
+            "pluginType": PluginType.MEDICATION.name,
             "timeStamp": "4567",
             "paymentType": "Card"
         }
@@ -26,7 +25,7 @@ class OrderTestCase(unittest.TestCase):
             "_id": "1234",
             "customerId": "9876",
             "orderDestination": "austin",
-            "pluginName": "food",
+            "pluginType": PluginType.MEDICATION.name,
             "timeStamp": "4567",
             "paymentType": "Card"
         }
@@ -35,7 +34,7 @@ class OrderTestCase(unittest.TestCase):
         self.assertEqual(order.id, "1234")
         self.assertEqual(order.customerId, "9876")
         self.assertEqual(order.orderDestination, "austin")
-        self.assertEqual(order.pluginName, "food")
+        self.assertEqual(order.pluginType, PluginType.MEDICATION)
         self.assertEqual(order.timeStamp, "4567")
         self.assertEqual(order.paymentType, "Card")
 
@@ -44,7 +43,7 @@ class OrderTestCase(unittest.TestCase):
             "_id": "1234",
             "customerId": "9876",
             "orderDestination": "austin",
-            "pluginName": "food",
+            "pluginType": PluginType.MEDICATION.name,
             "timeStamp": "4567",
             "paymentType": "Card"
         }
@@ -58,7 +57,7 @@ class OrderTestCase(unittest.TestCase):
         order.orderDestination = "Houston"
         self.assertEqual(order.orderDestination, "Houston")
         order.pluginName = "medication"
-        self.assertEqual(order.pluginName, "medication")
+        self.assertEqual(order.pluginType, PluginType.MEDICATION)
         order.timeStamp = "0:00"
         self.assertEqual(order.timeStamp, "0:00")
         order.paymentType = "Cash"
@@ -66,4 +65,4 @@ class OrderTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    unittest.main()

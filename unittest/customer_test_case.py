@@ -1,8 +1,7 @@
 import unittest
 import sys
-import xmlrunner
 
-sys.path.insert(1, "../")
+sys.path.insert(1, sys.path[0] + "/../")
 
 from customer import Customer
 
@@ -64,4 +63,4 @@ class CustomerTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+    unittest.main()

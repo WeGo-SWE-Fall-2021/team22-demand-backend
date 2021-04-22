@@ -1,6 +1,7 @@
 import requests
 import json
 
+from plugintype import PluginType
 from uuid import uuid4
 
 class Order:
@@ -10,7 +11,7 @@ class Order:
     def __init__(self, dict):
         self._id = str(dict.get("_id", uuid4()))
         self._customerId = dict["customerId"]
-        self._pluginName = dict["pluginName"]
+        self._pluginType = PluginType[dict["pluginType"]]
         self._timeStamp = dict["timeStamp"]
         self._paymentType = dict["paymentType"]
         self._orderDestination = dict["orderDestination"]
@@ -24,12 +25,12 @@ class Order:
         return self._customerId
 
     @property
-    def pluginName(self):
-        return self._pluginName
+    def pluginType(self):
+        return self._pluginType
 
-    @pluginName.setter
-    def pluginName(self, value):
-        self._pluginName = value
+    @pluginType.setter
+    def pluginType(self, value):
+        self._pluginType = value
 
     @property
     def timeStamp(self):
@@ -55,24 +56,22 @@ class Order:
     def orderDestination(self, value):
         self._orderDestination = value
 
-    # sends a get request to the supply backend to get a proccess into a dispatch and get order number
-    ###### Currently this just sends the orderID as a paramater and gets back the same ID to show connection between supply and demand #####
-    def requestVehicle(self):
+    # sends a get request to the supply backend to get a proccess into a dispatch and get vehicle tracking number
+    def dispatchOrder(self):
         url = "https://supply.team22.sweispring21.tk/api/v1/supply/dispatch"
         data = {
             "orderId": self.id,
             "orderDestination": self.orderDestination,
-            "pluginType": "1"
+            "pluginType": self.pluginType.name
         }
         response = requests.post(url, json=data, timeout=10)
         responseBody = json.loads(response.text)
-        vehicleID = responseBody["orderNum"]
         status = response.status_code
         return_data = {
             "status": response.status_code,
-            "tracking": vehicleID
+            "data": responseBody
         }
         return return_data
 
     def __str__(self):
-        return f"Order ( \nid: {self.id} \ncustomerId: {self.customerId} \npluginName: {self.pluginName} \ntimeStamp: {self.timeStamp} \npaymentType: {self.paymentType} \norderDestination: {self.orderDestination} \n)"
+        return f"Order ( \nid: {self.id} \ncustomerId: {self.customerId} \npluginName: {self.pluginType} \ntimeStamp: {self.timeStamp} \npaymentType: {self.paymentType} \norderDestination: {self.orderDestination} \n)"
