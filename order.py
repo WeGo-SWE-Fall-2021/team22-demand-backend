@@ -57,12 +57,12 @@ class Order:
         self._orderDestination = value
 
     # sends a get request to the supply backend to get a proccess into a dispatch and get vehicle tracking number
-    def dispatchOrder(self):
+    def dispatchOrder(self, vType):
         url = "https://supply.team22.sweispring21.tk/api/v1/supply/dispatch"
         data = {
             "orderId": self.id,
             "orderDestination": self.orderDestination,
-            "pluginType": self.pluginType.name
+            "vehicleType": vType # TODO, send vehicle type so that supply can select a vehicle out of that type
         }
         response = requests.post(url, json=data, timeout=10)
         responseBody = json.loads(response.text)

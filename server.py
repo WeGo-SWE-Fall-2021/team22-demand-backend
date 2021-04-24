@@ -45,16 +45,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if customer is not None:
                 postData["customerId"] = customer.id
                 order = Order(postData)
-                data = {
-                    "_id": order.id,
-                    "customerId": order.customerId,
-                    "pluginType": order.pluginType.name,
-                    "timeStamp": order.timeStamp,
-                    "paymentType": order.paymentType,
-                    "orderDestination": order.orderDestination
-                }
-                dispatch_response = order.dispatchOrder()
+
+                dispatch_response = order.dispatchOrder("FOOD")
                 if dispatch_response["status"] == 201:
+                    data = {
+                        "_id": order.id,
+                        "customerId": order.customerId,
+                        "pluginType": order.pluginType.name,
+                        "timeStamp": order.timeStamp,
+                        "paymentType": order.paymentType,
+                        "orderDestination": order.orderDestination
+                    }
                     db.Order.insert_one(data)
                     status = 201
                     responseBody = {
