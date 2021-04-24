@@ -1,6 +1,8 @@
 import sys
 import json
 import requests
+import jwt
+
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
 from order import Order
@@ -8,6 +10,11 @@ from customer import Customer
 from utils.mongoutils import initMongoFromCloud
 from plugintype import PluginType
 from urllib import parse
+from os import getenv
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     version = '0.1.0'
@@ -143,15 +150,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         try:
             tokenStr = self.headers["Cookie"]
             if tokenStr is not None:
-                token = tokenStr.split('=')[1]
+                token = tokenStr.split('token=')[1]
                 if token != "":
-                    user = db.Customer.find_one({"token": token})
-                    if user is not None:
-                        return Customer(user)
-            return None
+                    token_secret = getenv("TOKEN_SECRET")
+                    token_decoded = jwt.decode(token, token_secret, algorithms="HS256")
+                    user_data = db.Customer.find_one({ "_id": token_decoded["user_id"]})
+                    return Customer(user_data)
         except:
-            return None
-
+            pass
+        return None
 
 def main():
     port = 4001
