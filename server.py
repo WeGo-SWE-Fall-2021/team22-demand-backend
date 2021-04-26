@@ -152,7 +152,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                             url_order_ids += "&"
                         url_order_ids += f"orderId={order.id}"
 
-                    order_dispatch_response = requests.get(f"https://supply.team22.sweispring21.tk/api/v1/supply/status?orderId={url_order_ids}", timeout=10)
+                    order_dispatch_response = requests.get(f"https://supply.team22.sweispring21.tk/api/v1/supply/status?{url_order_ids}", timeout=10)
                     if order_dispatch_response.status_code == 200:
                         dispatches_data = json.loads(order_dispatch_response.text).get("dispatches")
                         orders_array = []
