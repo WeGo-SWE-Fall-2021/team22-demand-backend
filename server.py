@@ -168,9 +168,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                             elif dispatch_status == "in progress":
                                 order_status = OrderStatus.SHIPPED
                             elif dispatch_status == "complete":
-                                order_status == OrderStatus.DELIVERED
+                                order_status = OrderStatus.DELIVERED
                             else:
-                                order_status == OrderStatus.ERROR
+                                order_status = OrderStatus.ERROR
 
                             orders_array.append({
                                 "orderId": order.id,
