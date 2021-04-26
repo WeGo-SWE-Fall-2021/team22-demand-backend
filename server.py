@@ -158,8 +158,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         orders_array = []
 
                         for order in orders:
-                            dispatch_data = list(filter(lambda x: x.get("orderId"), dispatches_data)).get(0)
-                            dispatch_status = dispatch_data.get("dispatchStatus")
+                            dispatch_data = list(filter(lambda x: x.get("orderId"), dispatches_data))
+                            if (len(dispatch_data) == 0):
+                                continue
+                            dispatch_status = dispatch_data[0].get("dispatchStatus")
 
                             if dispatch_status == "processing":
                                 order_status = OrderStatus.PROCESSING
@@ -175,12 +177,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                 "orderStatus": order_status.name,
                                 "plugin": order.plugin.name,
                                 "paymentType": order.paymentType,
-                                "timeStamp": order.timeStamp,
+                                "timeStamp": order.timeStamp.isoformat(),
                                 "items": order.items,
                                 "orderDestination": order.orderDestination,
-                                "vehicleLocation": dispatch_data["vehicleLocation"],
-                                "destinationCoordinate": dispatches_data["destinationCoordinate"],
-                                "geometry": dispatch_data["geometry"]
+                                "vehicleLocation": dispatch_data[0]["vehicleLocation"],
+                                "destinationCoordinate": dispatches_data[0]["destinationCoordinate"],
+                                "geometry": dispatch_data[0]["geometry"],
+                                "eta": dispatch_data[0]["eta"]
                             })
 
                         status = 200
