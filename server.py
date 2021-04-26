@@ -12,23 +12,28 @@ from plugintype import PluginType
 from urllib import parse
 from os import getenv
 from dotenv import load_dotenv
+from orderstatus import OrderStatus
 
 load_dotenv()
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    version = '0.1.0'
+    version = '0.3.0'
 
     # Reads the POST data from the HTTP header
     def extract_POST_Body(self):
-        postBodyLength = int(self.headers['content-length'])
-        postBodyString = self.rfile.read(postBodyLength)
-        postBodyDict = json.loads(postBodyString)
-        return postBodyDict
+        try:
+            postBodyLength = int(self.headers['content-length'])
+            postBodyString = self.rfile.read(postBodyLength)
+            postBodyDict = json.loads(postBodyString)
+            return postBodyDict
+        except:
+            print("There was an error parsing POST body")
+            return {}
 
     # handle post requests
     def do_POST(self):
-        status = 401  # HTTP Request: Not found
+        status = 400  # HTTPS: Bad request
         postData = self.extract_POST_Body()  # store POST data into a dictionary
         path = self.path
         cloud = 'demand'
@@ -36,37 +41,61 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         db = client['team22_' + cloud]
         responseBody = {
             'status': 'failed',
-            'message': 'Request not found'
+            'message': 'Bad request'
         }
 
         customer = self.fetch_customer_from_token(db)
 
         if '/order' in path:
+            status = 401 # HTTPS: Unauthenticated
+            responseBody["message"] = "No user authenticated"
+
             if customer is not None:
                 postData["customerId"] = customer.id
-                order = Order(postData)
+                try:
+                    order = Order(postData)
+                except:
+                    order = None
 
-                dispatch_response = order.dispatchOrder("FOOD")
-                if dispatch_response["status"] == 201:
-                    data = {
-                        "_id": order.id,
-                        "customerId": order.customerId,
-                        "pluginType": order.pluginType.name,
-                        "timeStamp": order.timeStamp,
-                        "paymentType": order.paymentType,
-                        "orderDestination": order.orderDestination
+                responseBody["message"] = "Invalid order data."
+                if order is not None:
+                    if self.pluginType == PluginType.PIZZA:
+                        vType = "food"
+                    elif self.paymentType == PluginType.MEDICATION:
+                        vType = "refrigerated"
+                    else:
+                        vType = "storage"
+
+                    dispatch_request_data = {
+                        "orderId": order.id,
+                        "orderDestination": order.orderDestination,
+                        "vehicleType": vType
                     }
-                    db.Order.insert_one(data)
-                    status = 201
-                    responseBody = {
-                        'status': 'success',
-                        'message': 'successfully created order',
-                        'tracking': dispatch_response["data"]["vehicleId"],
-                        'location': dispatch_response["data"]["location"]
-                    }
-            else:
-                status = 403 # Unauthorized
-                responseBody["message"] = "No user logged in"
+
+                    dispatch_response = requests.post("https://supply.team22.sweispring21.tk/api/v1/supply/dispatch", json=dispatch_request_data, timeout=10)
+                    dispatch_response_body = json.loads(dispatch_response.text)
+
+                    if dispatch_response.status_code == 201:
+                        data = {
+                            "_id": order.id,
+                            "customerId": order.customerId,
+                            "pluginType": order.pluginType.name,
+                            "timeStamp": order.timeStamp,
+                            "paymentType": order.paymentType,
+                            "orderDestination": order.orderDestination
+                        }
+                        db.Order.insert_one(data)
+                        status = 201
+                        responseBody = {
+                            'status': 'success',
+                            'message': 'successfully created order',
+                            'tracking': dispatch_response["data"]["vehicleId"],
+                            'location': dispatch_response["data"]["location"]
+                        }
+                    elif dispatch_response.status_code == 409:
+                        # if user resubmitting order
+                        status = 409
+                        responseBody["message"] = "Order has already been submitted."
 
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
@@ -91,55 +120,64 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         customer = self.fetch_customer_from_token(db)
 
-
         if '/orders' in path:
             status = 401 # Unauthorized, not known to user
+            responseBody["message"] = "No user authenticated."
             if customer is not None:
-                if parameters is False: # If argumets empty then return all items in dictionary
-                    orders = list(db.Order.find({ "customerId": customer.id }, {
-                        "_id": 1,
-                        "pluginType": 1,
-                        "timeStamp": 1,
-                        "paymentType": 1,
-                        "orderDestination": 1
-                    }))
-                    for order in orders:
-                        response = requests.get(f"https://supply.team22.sweispring21.tk/api/v1/supply/status?orderId={order['_id']}", timeout=5)
-                        if response.status_code == 200:
-                            data = json.load(response.text)
-                            order["status"] = data["order_status"]
-                            order["starting_coordinates"] = data["vehicle_starting_coordinate"]
-                            order["destination_coordinates"] = data["destination_coordinate"]
-                            order["geometry"] = data["geometry"]
+                single_order_id = parameters.get("orderId", None)
+                orders_data = list(db.Order.find({ "customerId": customer.id }))
 
-                    status = 200
-                    responseBody["status"] = "success"
-                    responseBody["message"] = "successfully got orders"
-                    responseBody["orders"] = orders
-                else:
-                    order_id = parameters["orderId"]
-                    order_data = db.Order.find_one({ "_id": order_id })
-                    if order_data is not None:
-                        order = Order(order_data)
-                        response = requests.get(f"https://supply.team22.sweispring21.tk/api/v1/supply/status?orderId={order.id}", timeout=5)
-                        if response.status_code == 200:
-                            data = json.load(response.text)
-                            status = 200
-                            responseBody["order"] = {
-                                "_id": order.id,
-                                "pluginType": order.pluginType.name,
-                                "timeStamp": order.timeStamp,
+                if single_order_id is not None:
+                    orders_data = list(filter(lambda x: x.get("_id") == single_order_id, orders_data))
+
+                status = 404 # Not found, yes it's used in file server but I also need to identify if there are no orders for this user
+                responseBody["message"] = "No orders found."
+                if len(orders_data) != 0:
+                    orders = list(map(lambda x: Order(x), orders_data))
+                    url_order_ids = ""
+                    for order in orders:
+                        if url_order_ids != "":
+                            url_order_ids += "&"
+                        url_order_ids += f"orderId={order.id}"
+
+                    order_dispatch_response = requests.get(f"https://supply.team22.sweispring21.tk/api/v1/supply/status?orderId={url_order_ids}", timeout=10)
+                    if order_dispatch_response.status_code == 200:
+                        dispatches_data = json.loads(order_dispatch_response.text).get("dispatches")
+                        orders_array = []
+
+                        for order in orders:
+                            dispatch_data = list(filter(lambda x: x.get("orderId"), dispatches_data)).get(0)
+                            dispatch_status = dispatch_data.get("dispatchStatus")
+
+                            if dispatch_status == "processing":
+                                order_status = OrderStatus.PROCESSING
+                            elif dispatch_status == "in progress":
+                                order_status = OrderStatus.SHIPPED
+                            elif dispatch_status == "complete":
+                                order_status == OrderStatus.DELIVERED
+                            else:
+                                order_status == OrderStatus.ERROR
+
+                            orders_array.append({
+                                "orderId": order.id,
+                                "orderStatus": order_status.name,
+                                "pluginType": order.pluginType,
                                 "paymentType": order.paymentType,
-                                "orderDestination": order.orderDestination
-                            }
-                            responseBody["status"] = "success"
-                            responseBody["message"] = "successfully got order from id"
-                            responseBody["order"]["status"] = data["order_status"]
-                            responseBody["order"]["vehicle"]["starting_coordinates"] = data["vehicle_starting_coordinate"]
-                            responseBody["order"]["vehicle"]["destination_coordinates"] = data["destination_coordinate"]
-                            responseBody["order"]["vehicle"]["geometry"] = data["geometry"]
-                        else:
-                            pass
+                                "timeStamp": order.timeStamp,
+                                "orderDestination": order.orderDestination,
+                                "vehicleLocation": dispatch_data["vehicleLocation"],
+                                "destinationCoordinate": dispatches_data["destinationCoordinate"],
+                                "geometry": dispatch_data["geometry"]
+                            })
+
+                        status = 200
+                        responseBody["status"] = "success"
+                        responseBody["message"] = "Successfully got orders"
+                        responseBody["orders"] = orders_array
+                    elif order_dispatch_response.status_code == 400:
+                        status = 400
+                        responseBody["message"] = "There was an error getting order statuses."
+
         self.send_response(status)
         self.send_header('Content-type', 'application/json')
         self.end_headers()

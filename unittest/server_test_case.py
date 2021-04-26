@@ -3,6 +3,7 @@ import sys
 import time
 import requests
 import json
+import jwt
 
 sys.path.insert(1, sys.path[0] + "/../")
 
@@ -11,6 +12,8 @@ from utils.mongoutils import initMongoFromCloud
 from http.server import HTTPServer
 from server import SimpleHTTPRequestHandler
 from plugintype import PluginType
+from os import getenv
+
 
 # Global variables used in the unittest
 port = 4001
@@ -24,8 +27,7 @@ customer_data_one = {
     "phoneNumber": "test_phoneNumber",
     "email": "test@test.com",
     "username": "test_username",
-    "password": "test_password",
-    "token": "tokennnnn"
+    "password": "test_password"
 }
 
 order_one = {
@@ -61,9 +63,34 @@ class ServerTestCase(unittest.TestCase):
         db.Order.insert_one(order_one)
 
     # Cannot test case since when requesting order information it has to communicate with supply
-    def test_get_order(self):
-        order_data = db.Order.find_one({ "_id": order_one["_id"]})
-        self.assertEqual(order_data["_id"], order_one["_id"])
+    def test_get_order_failed_communicating_supply(self):
+        # Generate a jwt token
+        token_secret = getenv("TOKEN_SECRET")
+        token = jwt.encode({ 
+            "user_id": customer_data_one["_id"]
+            }, token_secret, algorithm="HS256")
+        cookies = {
+            'token': token
+         }
+
+        response = requests.get("http://localhost:4001/orders", cookies=cookies, timeout=10)
+        self.assertEqual(response.status_code, 404) # Data is not found
+
+    # Cannot test case since when requesting order information it has to communicate with supply
+    def test_get_order_failed_none_in_database(self):
+        # Generate a jwt token
+        token_secret = getenv("TOKEN_SECRET")
+        token = jwt.encode({ 
+            "user_id": customer_data_one["_id"]
+            }, token_secret, algorithm="HS256")
+        cookies = {
+            'token': token
+         }
+
+        db.Order.remove({})
+        response = requests.get("http://localhost:4001/orders", cookies=cookies, timeout=10)
+        self.assertEqual(response.status_code, 404) # Data is not found
+        db.Order.insert_one(order_one)
 
     @classmethod
     def tearDownClass(cls):
