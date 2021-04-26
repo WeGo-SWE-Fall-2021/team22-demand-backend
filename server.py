@@ -79,7 +79,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                             data = {
                                 "_id": order.id,
                                 "customerId": order.customerId,
-                                "plugin": order.pluginType.name,
+                                "plugin": order.plugin.name,
                                 "timeStamp": order.timeStamp,
                                 "paymentType": order.paymentType,
                                 "orderDestination": order.orderDestination,
@@ -90,6 +90,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                             responseBody = {
                                 'status': 'success',
                                 'message': 'successfully created order',
+                                'orderId': order.id,
                                 'tracking': dispatch_response["data"]["vehicleId"],
                                 'location': dispatch_response["data"]["location"]
                             }
