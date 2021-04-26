@@ -11,10 +11,11 @@ class Order:
     def __init__(self, dict):
         self._id = str(dict.get("_id", uuid4()))
         self._customerId = dict["customerId"]
-        self._pluginType = PluginType[dict.get("pluginType", "").upper()]
         self._timeStamp = dict.get("timeStamp", datetime.datetime.utcnow()) # Only set by mongo
         self._paymentType = dict["paymentType"]
         self._orderDestination = dict["orderDestination"]
+        self._plugin = PluginType[dict["plugin"]]
+        self._items = dict["items"]
 
     @property
     def id(self):
@@ -25,12 +26,12 @@ class Order:
         return self._customerId
 
     @property
-    def pluginType(self):
-        return self._pluginType
+    def plugin(self):
+        return self._plugin
 
-    @pluginType.setter
-    def pluginType(self, value):
-        self._pluginType = value
+    @plugin.setter
+    def plugin(self, value):
+        self._plugin = value
 
     @property
     def timeStamp(self):
@@ -56,17 +57,26 @@ class Order:
     def orderDestination(self, value):
         self._orderDestination = value
 
+    @property
+    def items(self):
+        return self._items
+
+    @items.setter
+    def items(self, value):
+        self._items = value
+
     def __str__(self):
-        return f"Order ( \nid: {self.id} \ncustomerId: {self.customerId} \npluginName: {self.pluginType} \ntimeStamp: {self.timeStamp} \npaymentType: {self.paymentType} \norderDestination: {self.orderDestination} \n)"
+        return f"Order ( \nid: {self.id} \ncustomerId: {self.customerId} \nplugin: {self.plugin} \ntimeStamp: {self.timeStamp} \npaymentType: {self.paymentType} \norderDestination: {self.orderDestination} \nitems: {self.items} \n)"
 
     def __eq__(self, value):
         return isinstance(value, Order) and \
             self.id == value.id and \
             self.customerId == value.customerId and \
-            self.pluginType == value.pluginType and \
+            self.plugin == value.plugin and \
             self.timeStamp == value.timeStamp and \
             self.paymentType == value.paymentType and \
-            self.orderDestination == value.orderDestination
+            self.orderDestination == value.orderDestination and \
+            self.items == value.items
 
     def __hash__(self):
-        return hash((self.id, self.customerId, self.pluginType, self.timeStamp, self.paymentType, self.orderDestination))
+        return hash((self.id, self.customerId, self.pluginType, self.timeStamp, self.paymentType, self.orderDestination, self.items))

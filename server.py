@@ -59,9 +59,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
                 responseBody["message"] = "Invalid order data."
                 if order is not None:
-                    if self.pluginType == PluginType.PIZZA:
+                    if self.plugin == PluginType.PIZZA:
                         vType = "food"
-                    elif self.paymentType == PluginType.MEDICATION:
+                    elif self.plugin == PluginType.MEDICATION:
                         vType = "refrigerated"
                     else:
                         vType = "storage"
@@ -79,10 +79,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         data = {
                             "_id": order.id,
                             "customerId": order.customerId,
-                            "pluginType": order.pluginType.name,
+                            "plugin": order.pluginType.name,
                             "timeStamp": order.timeStamp,
                             "paymentType": order.paymentType,
-                            "orderDestination": order.orderDestination
+                            "orderDestination": order.orderDestination,
+                            "items": order.items
                         }
                         db.Order.insert_one(data)
                         status = 201
@@ -158,12 +159,23 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                             else:
                                 order_status == OrderStatus.ERROR
 
+                            items_data = []
+                            for item_data in order.items:
+                                item_id = item_data["id"]
+                                item = db.Item.find_one({ "_id": item_id })
+                                if item != None:
+                                    items_data.append({
+                                        "name": item["name"],
+                                        "option": items_data["option"]
+                                    })
+
                             orders_array.append({
                                 "orderId": order.id,
                                 "orderStatus": order_status.name,
-                                "pluginType": order.pluginType,
+                                "plugin": order.plugin.name,
                                 "paymentType": order.paymentType,
                                 "timeStamp": order.timeStamp,
+                                "items": order.items,
                                 "orderDestination": order.orderDestination,
                                 "vehicleLocation": dispatch_data["vehicleLocation"],
                                 "destinationCoordinate": dispatches_data["destinationCoordinate"],
@@ -177,6 +189,52 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     elif order_dispatch_response.status_code == 400:
                         status = 400
                         responseBody["message"] = "There was an error getting order statuses."
+
+        elif '/plugins':
+            # Returns plugins with availability
+            plugin_name = parameters.get("name", None)
+            if plugin_name is not None:
+                if plugin_name == "all":
+                    plugins = list(db.Plugin.find({}, {
+                        "_id": 1,
+                        "name": 1,
+                        "available": 1,
+                    }))
+                    plugins_array = []
+                    for plugin in plugins:
+                        items = list(db.Item.find({ "pluginId": plugin["_id"] }, {
+                            "options": 1,
+                            "name": 1,
+                        }))
+                        plugins_array.append({
+                            "name": plugin["name"],
+                            "available": plugin["available"],
+                            "items": items
+                        })
+                    status = 200
+                    responseBody = {
+                        'status': 'successful',
+                        'plugins': plugins_array
+                    }
+                else:
+                    plugin = db.Plugin.find_one({ "name": plugin_name }, {
+                        "name": 1,
+                        "items": 1,
+                        "available": 1,
+                    })
+                    if plugin is None:
+                        plugin = {}
+                    else:
+                        items = list(db.Item.find({ "pluginId": plugin["_id"] }, {
+                            "options": 1,
+                            "name": 1,
+                        }))
+                        plugin["items"] = items
+                    status = 200
+                    responseBody = {
+                        'status': 'successful',
+                        'plugin': plugin
+                    }
 
         self.send_response(status)
         self.send_header('Content-type', 'application/json')

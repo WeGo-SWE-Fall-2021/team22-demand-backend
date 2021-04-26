@@ -4,6 +4,7 @@ import time
 import requests
 import json
 import jwt
+import uuid
 
 sys.path.insert(1, sys.path[0] + "/../")
 
@@ -20,6 +21,38 @@ port = 4001
 
 # Defined data
 
+plugin_type_one = {
+    "_id": str(uuid.uuid4()),
+    "name": PluginType.MEDICATION.name,
+    "available": True,
+    "vType": "refrigerated"
+}
+
+plugin_type_one_item_one = {
+    "_id": str(uuid.uuid4()),
+    "name": "Ibuprofen",
+    "pluginId": plugin_type_one["_id"],
+    "options": {
+        "size": ["24mg", "500mg"]   
+    }
+}
+
+plugin_type_two = {
+    "_id": str(uuid.uuid4()),
+    "name": PluginType.PIZZA.name,
+    "available": True,
+    "vType": "food"
+}
+
+plugin_type_two_item_one = {
+    "_id": str(uuid.uuid4()),
+    "name": "Large Pizza",
+    "pluginId": plugin_type_two["_id"],
+    "options": [{
+        "toppings": ["Pepperoni"]
+    }]
+}
+
 customer_data_one = {
     "_id": "1515646454",
     "firstName": "test_firstName",
@@ -33,10 +66,14 @@ customer_data_one = {
 order_one = {
     "_id": "123",
     "customerId": customer_data_one["_id"],
-    "pluginType": PluginType.MEDICATION.name,
     "timeStamp": "23244",
     "paymentType": "CARD",
-    "orderDestination": "3001 S Congress Ave, Austin, TX 78704"
+    "orderDestination": "3001 S Congress Ave, Austin, TX 78704",
+    "plugin": PluginType.MEDICATION.name,
+    "items": [{
+        "id": plugin_type_one_item_one["_id"],
+        "option": plugin_type_one_item_one["options"]["size"][0]
+    }]
 }
 
 client = initMongoFromCloud("demand")
@@ -59,8 +96,12 @@ class ServerTestCase(unittest.TestCase):
 
         db.Customer.remove({})
         db.Order.remove({})
+        db.Plugin.remove({})
+        db.Item.remove({})
         db.Customer.insert_one(customer_data_one)
         db.Order.insert_one(order_one)
+        db.Plugin.insert([plugin_type_one, plugin_type_two])
+        db.Item.insert([plugin_type_one_item_one, plugin_type_two_item_one])
 
     # Cannot test case since when requesting order information it has to communicate with supply
     def test_get_order_failed_communicating_supply(self):
@@ -92,6 +133,31 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 404) # Data is not found
         db.Order.insert_one(order_one)
 
+    def test_get_all_plugins(self):
+        response = requests.get("http://localhost:4001/plugins?name=all", timeout=10)
+        self.assertEqual(response.status_code, 200)
+        json_body = json.loads(response.text)
+        plugins_data = json_body["plugins"]
+        self.assertEqual(len(plugins_data), 2)
+
+    def test_get_food_plugin(self):
+        response = requests.get("http://localhost:4001/plugins?name=PIZZA", timeout=10)
+        self.assertEqual(response.status_code, 200)
+        json_body = json.loads(response.text)
+        plugin_data = json_body["plugin"]
+        self.assertEqual(plugin_data["name"], plugin_type_two["name"])
+
+    def test_get_plugin_not_in_db(self):
+        response = requests.get("http://localhost:4001/plugins?name=no", timeout=10)
+        self.assertEqual(response.status_code, 200)
+        json_body = json.loads(response.text)
+        plugin_data = json_body["plugin"]
+        self.assertEqual(plugin_data, {})
+
+    def test_get_plugin_no_args(self):
+        response = requests.get("http://localhost:4001/plugins", timeout=10)
+        self.assertEqual(response.status_code, 400)
+
     @classmethod
     def tearDownClass(cls):
         # tear down server
@@ -104,3 +170,4 @@ class ServerTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    
