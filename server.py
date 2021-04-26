@@ -57,46 +57,46 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 except:
                     order = None
 
+                status = 400
                 responseBody["message"] = "Invalid order data."
                 if order is not None:
-                    if self.plugin == PluginType.PIZZA:
-                        vType = "food"
-                    elif self.plugin == PluginType.MEDICATION:
-                        vType = "refrigerated"
-                    else:
-                        vType = "storage"
+                    status = 403 # Forbitten to change
+                    responseBody["message"] = "Order cannot be added since the specified plugin is unavailable."
+                    plugin_data = db.Plugin.find_one({"name": order.plugin.name, "available": True})
+                    if plugin_data is not None:
+                        vType = plugin_data["vType"]
 
-                    dispatch_request_data = {
-                        "orderId": order.id,
-                        "orderDestination": order.orderDestination,
-                        "vehicleType": vType
-                    }
-
-                    dispatch_response = requests.post("https://supply.team22.sweispring21.tk/api/v1/supply/dispatch", json=dispatch_request_data, timeout=10)
-                    dispatch_response_body = json.loads(dispatch_response.text)
-
-                    if dispatch_response.status_code == 201:
-                        data = {
-                            "_id": order.id,
-                            "customerId": order.customerId,
-                            "plugin": order.pluginType.name,
-                            "timeStamp": order.timeStamp,
-                            "paymentType": order.paymentType,
+                        dispatch_request_data = {
+                            "orderId": order.id,
                             "orderDestination": order.orderDestination,
-                            "items": order.items
+                            "vehicleType": vType
                         }
-                        db.Order.insert_one(data)
-                        status = 201
-                        responseBody = {
-                            'status': 'success',
-                            'message': 'successfully created order',
-                            'tracking': dispatch_response["data"]["vehicleId"],
-                            'location': dispatch_response["data"]["location"]
-                        }
-                    elif dispatch_response.status_code == 409:
-                        # if user resubmitting order
-                        status = 409
-                        responseBody["message"] = "Order has already been submitted."
+
+                        dispatch_response = requests.post("https://supply.team22.sweispring21.tk/api/v1/supply/dispatch", json=dispatch_request_data, timeout=10)
+                        dispatch_response_body = json.loads(dispatch_response.text)
+
+                        if dispatch_response.status_code == 201:
+                            data = {
+                                "_id": order.id,
+                                "customerId": order.customerId,
+                                "plugin": order.pluginType.name,
+                                "timeStamp": order.timeStamp,
+                                "paymentType": order.paymentType,
+                                "orderDestination": order.orderDestination,
+                                "items": order.items
+                            }
+                            db.Order.insert_one(data)
+                            status = 201
+                            responseBody = {
+                                'status': 'success',
+                                'message': 'successfully created order',
+                                'tracking': dispatch_response["data"]["vehicleId"],
+                                'location': dispatch_response["data"]["location"]
+                            }
+                        elif dispatch_response.status_code == 409:
+                            # if user resubmitting order
+                            status = 409
+                            responseBody["message"] = "Order has already been submitted."
 
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
@@ -159,16 +159,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                             else:
                                 order_status == OrderStatus.ERROR
 
-                            items_data = []
-                            for item_data in order.items:
-                                item_id = item_data["id"]
-                                item = db.Item.find_one({ "_id": item_id })
-                                if item != None:
-                                    items_data.append({
-                                        "name": item["name"],
-                                        "option": items_data["option"]
-                                    })
-
                             orders_array.append({
                                 "orderId": order.id,
                                 "orderStatus": order_status.name,
@@ -207,6 +197,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                             "name": 1,
                         }))
                         plugins_array.append({
+                            "_id": plugin["_id"],
                             "name": plugin["name"],
                             "available": plugin["available"],
                             "items": items

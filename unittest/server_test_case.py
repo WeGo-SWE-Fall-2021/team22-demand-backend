@@ -71,7 +71,7 @@ order_one = {
     "orderDestination": "3001 S Congress Ave, Austin, TX 78704",
     "plugin": PluginType.MEDICATION.name,
     "items": [{
-        "id": plugin_type_one_item_one["_id"],
+        "name": plugin_type_one_item_one["name"],
         "option": plugin_type_one_item_one["options"]["size"][0]
     }]
 }

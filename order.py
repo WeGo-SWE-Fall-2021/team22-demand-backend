@@ -15,7 +15,7 @@ class Order:
         self._paymentType = dict["paymentType"]
         self._orderDestination = dict["orderDestination"]
         self._plugin = PluginType[dict["plugin"]]
-        self._items = dict["items"]
+        self._items = dict.get("items", [])
 
     @property
     def id(self):

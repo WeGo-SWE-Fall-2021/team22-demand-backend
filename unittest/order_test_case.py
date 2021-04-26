@@ -14,7 +14,7 @@ order_data = {
     "orderDestination": "3001 S Congress Ave, Austin, TX 78704",
     "plugin": PluginType.MEDICATION.name,
     "items": [{
-        "id": "8039586408",
+        "name": "Ibuprofen",
         "option": "24gm"
     }]
 }
