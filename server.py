@@ -87,12 +87,22 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                             }
                             db.Order.insert_one(data)
                             status = 201
+                            dispatch_status = dispatch_response["dispatchStatus"]
+                            if dispatch_status == "processing":
+                                order_status = OrderStatus.PROCESSING
+                            elif dispatch_status == "in progress":
+                                order_status = OrderStatus.SHIPPED
+                            elif dispatch_status == 'complete':
+                                order_status == OrderStatus.DELIVERED
+                            else:
+                                order_status = OrderStatus.ERROR
+
                             responseBody = {
                                 'status': 'success',
                                 'message': 'successfully created order',
                                 'orderId': order.id,
-                                'tracking': dispatch_response["data"]["vehicleId"],
-                                'location': dispatch_response["data"]["location"]
+                                'orderStatus': order_status.name,
+                                'vehicleId': dispatch_response["vehicleId"]
                             }
                         elif dispatch_response.status_code == 409:
                             # if user resubmitting order
