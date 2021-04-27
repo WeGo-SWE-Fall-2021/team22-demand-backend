@@ -183,7 +183,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                 "vehicleLocation": dispatch_data[0]["vehicleLocation"],
                                 "destinationCoordinate": dispatches_data[0]["destinationCoordinate"],
                                 "geometry": dispatch_data[0]["geometry"],
-                                "eta": dispatch_data[0]["eta"]
+                                "eta": dispatch_data[0]["eta"],
+                                "dock": dispatch_data[0]["dock"]
                             })
 
                         status = 200
