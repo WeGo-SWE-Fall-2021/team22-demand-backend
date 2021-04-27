@@ -137,10 +137,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             responseBody["message"] = "No user authenticated."
             if customer is not None:
                 single_order_id = parameters.get("orderId", None)
-                orders_data = list(db.Order.find({ "customerId": customer.id }))
 
                 if single_order_id is not None:
-                    orders_data = list(filter(lambda x: x.get("_id") == single_order_id, orders_data))
+                    orders_data = list(db.Order.find({ "customerId": customer.id, "_id": single_order_id }))
+                else:
+                    orders_data = list(db.Order.find({ "customerId": customer.id }))
 
                 status = 404 # Not found, yes it's used in file server but I also need to identify if there are no orders for this user
                 responseBody["message"] = "No orders found."
@@ -158,10 +159,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         orders_array = []
 
                         for order in orders:
-                            dispatch_data = list(filter(lambda x: x.get("orderId"), dispatches_data))
-                            if (len(dispatch_data) == 0):
+                            dispatch_data = next(filter(lambda x: x.get("orderId") == order.id, dispatches_data), None)
+                            if (dispatch_data == None):
                                 continue
-                            dispatch_status = dispatch_data[0].get("dispatchStatus")
+                            dispatch_status = dispatch_data.get("dispatchStatus")
 
                             if dispatch_status == "processing":
                                 order_status = OrderStatus.PROCESSING
@@ -180,11 +181,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                 "timeStamp": order.timeStamp.isoformat(),
                                 "items": order.items,
                                 "orderDestination": order.orderDestination,
-                                "vehicleLocation": dispatch_data[0]["vehicleLocation"],
-                                "destinationCoordinate": dispatches_data[0]["destinationCoordinate"],
-                                "geometry": dispatch_data[0]["geometry"],
-                                "eta": dispatch_data[0]["eta"],
-                                "dock": dispatch_data[0]["dock"]
+                                "vehicleLocation": dispatch_data.get("vehicleLocation", ""),
+                                "destinationCoordinate": dispatch_data.get("destinationCoordinate", ""),
+                                "geometry": dispatch_data.get("geometry", ""),
+                                "eta": dispatch_data.get("eta", ""),
+                                "dock": dispatch_data.get("dock", "")
                             })
 
                         status = 200
