@@ -143,8 +143,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 else:
                     orders_data = list(db.Order.find({ "customerId": customer.id }))
 
-                status = 404 # Not found, yes it's used in file server but I also need to identify if there are no orders for this user
-                responseBody["message"] = "No orders found."
                 if len(orders_data) != 0:
                     orders = list(map(lambda x: Order(x), orders_data))
                     url_order_ids = ""
@@ -195,6 +193,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     elif order_dispatch_response.status_code == 400:
                         status = 400
                         responseBody["message"] = "There was an error getting order statuses."
+                else:
+                    status = 200 # No orders found, request still is okay
+                    responseBody["message"] = "No orders found."
+                    responseBody["orders"] = orders_data
 
         elif '/plugins':
             # Returns plugins with availability
