@@ -201,41 +201,23 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             plugin_name = parameters.get("name", None)
             if plugin_name is not None:
                 if plugin_name == "all":
-                    plugins = list(db.Plugin.find({}, {
-                        "_id": 1,
-                        "name": 1,
-                        "available": 1,
-                    }))
+                    plugins = list(db.Plugin.find({}))
                     plugins_array = []
                     for plugin in plugins:
-                        items = list(db.Item.find({ "pluginId": plugin["_id"] }, {
-                            "options": 1,
-                            "name": 1,
-                        }))
-                        plugins_array.append({
-                            "_id": plugin["_id"],
-                            "name": plugin["name"],
-                            "available": plugin["available"],
-                            "items": items
-                        })
+                        items = list(db.Item.find({ "pluginId": plugin["_id"] }))
+                        plugin["items"] = items
+                        plugins_array.append(plugin)
                     status = 200
                     responseBody = {
                         'status': 'successful',
                         'plugins': plugins_array
                     }
                 else:
-                    plugin = db.Plugin.find_one({ "name": plugin_name }, {
-                        "name": 1,
-                        "items": 1,
-                        "available": 1,
-                    })
+                    plugin = db.Plugin.find_one({ "name": plugin_name })
                     if plugin is None:
                         plugin = {}
                     else:
-                        items = list(db.Item.find({ "pluginId": plugin["_id"] }, {
-                            "options": 1,
-                            "name": 1,
-                        }))
+                        items = list(db.Item.find({ "pluginId": plugin["_id"] }))
                         plugin["items"] = items
                     status = 200
                     responseBody = {
