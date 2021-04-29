@@ -115,7 +115,7 @@ class ServerTestCase(unittest.TestCase):
          }
 
         response = requests.get("http://localhost:4001/orders", cookies=cookies, timeout=10)
-        self.assertEqual(response.status_code, 404) # Data is not found
+        self.assertEqual(response.status_code, 200) # Data is not found
 
     # Cannot test case since when requesting order information it has to communicate with supply
     def test_get_order_failed_none_in_database(self):
@@ -130,7 +130,7 @@ class ServerTestCase(unittest.TestCase):
 
         db.Order.remove({})
         response = requests.get("http://localhost:4001/orders", cookies=cookies, timeout=10)
-        self.assertEqual(response.status_code, 404) # Data is not found
+        self.assertEqual(response.status_code, 200) # Data is not found
         db.Order.insert_one(order_one)
 
     def test_get_all_plugins(self):

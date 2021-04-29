@@ -190,11 +190,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         responseBody["status"] = "success"
                         responseBody["message"] = "Successfully got orders"
                         responseBody["orders"] = orders_array
-                    elif order_dispatch_response.status_code == 400:
+                    else:
                         status = 400
                         responseBody["message"] = "There was an error getting order statuses."
                 else:
-                    status = 200 # No orders found, request still is okay
+                    status = 200 # No orders found
                     responseBody["message"] = "No orders found."
                     responseBody["orders"] = orders_data
 
