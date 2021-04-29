@@ -104,20 +104,6 @@ class ServerTestCase(unittest.TestCase):
         db.Item.insert([plugin_type_one_item_one, plugin_type_two_item_one])
 
     # Cannot test case since when requesting order information it has to communicate with supply
-    def test_get_order_failed_communicating_supply(self):
-        # Generate a jwt token
-        token_secret = getenv("TOKEN_SECRET")
-        token = jwt.encode({ 
-            "user_id": customer_data_one["_id"]
-            }, token_secret, algorithm="HS256")
-        cookies = {
-            'token': token
-         }
-
-        response = requests.get("http://localhost:4001/orders", cookies=cookies, timeout=10)
-        self.assertEqual(response.status_code, 200) # Data is not found
-
-    # Cannot test case since when requesting order information it has to communicate with supply
     def test_get_order_failed_none_in_database(self):
         # Generate a jwt token
         token_secret = getenv("TOKEN_SECRET")
