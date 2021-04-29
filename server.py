@@ -159,7 +159,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         for order in orders:
                             dispatch_data = next(filter(lambda x: x.get("orderId") == order.id, dispatches_data), None)
                             if (dispatch_data == None):
-                                continue
+                                dispatch_data = {}
                             dispatch_status = dispatch_data.get("dispatchStatus")
 
                             if dispatch_status == "processing":
