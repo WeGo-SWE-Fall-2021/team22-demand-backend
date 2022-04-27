@@ -7,7 +7,7 @@ from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
 from order import Order
 from customer import Customer
-from utils.mongoutils import initMongoFromCloud
+from utils.mongoutils import initMongo
 from plugintype import PluginType
 from urllib import parse
 from os import getenv
@@ -36,9 +36,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         status = 400  # HTTPS: Bad request
         postData = self.extract_POST_Body()  # store POST data into a dictionary
         path = self.path
-        cloud = 'demand'
-        client = initMongoFromCloud(cloud)
-        db = client['team22_' + cloud]
+        client = initMongo()
+        db = client['wego-db']
         responseBody = {
             'status': 'failed',
             'message': 'Bad request'
@@ -119,9 +118,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = self.path
         status = 400
-        cloud = 'demand'
-        client = initMongoFromCloud(cloud)
-        db = client['team22_' + cloud]
+        client = initMongo()
+        db = client['wego-db']
         responseBody = {
             'status': 'failed',
             'message': 'request not found'

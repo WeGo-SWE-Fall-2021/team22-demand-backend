@@ -7,8 +7,8 @@ load_dotenv()
 
 mongo_secret = os.getenv("MONGO_SECRET")
 
-def initMongoFromCloud(cloud):
+def initMongo():
     return MongoClient('localhost:27017',
-                       username="developer",
+                       username="wego-deploy",
                        password=f"{mongo_secret}",
-                       authSource=f"team22_{cloud}")
+                       authSource=f"wego-db")

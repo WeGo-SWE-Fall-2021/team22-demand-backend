@@ -9,7 +9,7 @@ import uuid
 sys.path.insert(1, sys.path[0] + "/../")
 
 from threading import Thread
-from utils.mongoutils import initMongoFromCloud
+from utils.mongoutils import initMongo
 from http.server import HTTPServer
 from server import SimpleHTTPRequestHandler
 from plugintype import PluginType
@@ -76,7 +76,7 @@ order_one = {
     }]
 }
 
-client = initMongoFromCloud("demand")
+client = initMongo("demand")
 db = client["team22_demand"]
 
 # This is a demo that unittests the python endpoints. Beware, order matters in this case since we are
